@@ -14,9 +14,9 @@ import log_initializer
 import models
 
 # logging
-from logging import getLogger, DEBUG
+from logging import getLogger, DEBUG, INFO
 log_initializer.setFmt()
-log_initializer.setRootLevel(DEBUG)
+log_initializer.setRootLevel(INFO)
 logger = getLogger(__name__)
 
 # Disable type check in chainer
@@ -40,20 +40,20 @@ if __name__ == '__main__':
     parser.add_argument('--img', required=True, help='Input image path')
     args = parser.parse_args()
 
-    logger.info('HyperFace Evaluation')
+    logger.debug('HyperFace Evaluation')
 
     # Load config
     config.load(args.config)
 
     # Define a model
-    logger.info('Define a HyperFace model')
+    logger.debug('Define a HyperFace model')
     model = models.HyperFaceModel()
     model.train = False
     model.report = False
     model.backward = False
 
     # Initialize model
-    logger.info('Initialize a model using model "{}"'.format(args.model))
+    logger.debug('Initialize a model using model "{}"'.format(args.model))
     chainer.serializers.load_npz(args.model, model)
 
     # Setup GPU
@@ -66,7 +66,7 @@ if __name__ == '__main__':
         xp = np
 
     # Load image file
-    logger.info('Load an image from "{}"'.format(args.img))
+    logger.debug('Load an image from "{}"'.format(args.img))
     img = cv2.imread(args.img)
     if img is None or img.size == 0 or img.shape[0] == 0 or img.shape[1] == 0:
         logger.error('Failed to load')
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     x = chainer.Variable(imgs, volatile=True)
 
     # Forward
-    logger.info('Forward the network')
+    logger.debug('Forward the network')
     y = model(x)
 
     # Chainer.Variable -> np.ndarray
@@ -112,8 +112,14 @@ if __name__ == '__main__':
     drawing.draw_landmark(img, landmark, visibility, landmark_color, 0.5)
     drawing.draw_pose(img, pose)
     drawing.draw_gender(img, gender)
+    
+    # Results
+    logger.info('Gender', 'Female' if gender else 'Male')
+    logger.info('Landmarks')
+    print(landmark)
+    logger.info('Pose', pose)
 
     # Show image
-    logger.info('Show the result image')
-    cv2.imshow('result', img)
-    cv2.waitKey(0)
+    #logger.debug('Show the result image')
+    #cv2.imshow('result', img)
+    #cv2.waitKey(0)
